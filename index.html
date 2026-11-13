@@ -1123,7 +1123,43 @@
             });
         });
 
-        // ============ BUTTON INTERACTIONS ============
+        // ============ ACTIVE NAV LINK ============
+// Marks the nav link of the section sitting under the reading line, so the
+// navbar always points at the part of the page you are reading.
+(function () {
+  const links = Array.from(document.querySelectorAll('.nav-link'));
+  const sections = links
+    .map((a) => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+  if (!sections.length) return;
+
+  const READING_LINE = 140;
+  let ticking = false;
+
+  const setActive = () => {
+    ticking = false;
+    let current = sections[0];
+    sections.forEach((s) => {
+      if (s.getBoundingClientRect().top - READING_LINE <= 0) current = s;
+    });
+    // At the very bottom the last section wins even when it is short.
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 2) {
+      current = sections[sections.length - 1];
+    }
+    links.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#' + current.id));
+  };
+
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(setActive);
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  setActive();
+})();
+// ============ BUTTON INTERACTIONS ============
         document.querySelectorAll('.btn').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 // Ripple effect
